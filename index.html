@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora de Gotas de Catalizador</title>
+
+  <link rel="manifest" href="manifest.json" />
+  
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    .result {
+      margin-top: 20px;
+      background: #e6f3ff;
+      padding: 1rem;
+      border-radius: 8px;
+      white-space: pre-line;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('Service Worker registrado'))
+        .catch(err => console.warn('Error al registrar Service Worker:', err));
+    }
+
+    let resultadoTexto = "";
+
+    function calcular() {
+      const peso = parseFloat(document.getElementById("peso").value);
+      const resultado = document.getElementById("resultado");
+
+      if (isNaN(peso) || peso < 10) {
+        resultadoTexto = "⚠️ Ingresa al menos 10 gramos de silicón.";
+        resultado.textContent = resultadoTexto;
+        return;
+      }
+
+      const gotas2 = Math.round(peso * 0.02 * 20);
+      const gotas25 = Math.round(peso * 0.025 * 20);
+      const gotas3 = Math.round(peso * 0.03 * 20);
+
+      resultadoTexto = `Para ${peso} g de silicón necesitas:\n\n` +
+                       `• Al 2%   → ${gotas2} gotas\n` +
+                       `• Al 2.5% → ${gotas25} gotas\n` +
+                       `• Al 3%   → ${gotas3} gotas`;
+
+      resultado.textContent = resultadoTexto;
+    }
+
+    function imprimir() {
+      if (!resultadoTexto) return alert("Primero realiza un cálculo.");
+      const ventana = window.open('', '', 'width=400,height=600');
+      ventana.document.write(`<pre>${resultadoTexto}</pre>`);
+      ventana.print();
+    }
+
+    function descargarPDF() {
+      if (!resultadoTexto) return alert("Primero realiza un cálculo.");
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(14);
+      doc.text("Resultado de gotas de catalizador", 20, 20);
+      const lines = resultadoTexto.split("\n");
+      let y = 40;
+      for (let line of lines) {
+        doc.text(line, 20, y);
+        y += 10;
+      }
+      doc.save("resultado-catalizador.pdf");
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h2>Calculadora de Gotas de Catalizador</h2>
+
+    <input type="number" id="peso" placeholder="Peso del silicón (gramos)" min="10" step="0.1">
+    <button onclick="calcular()">Calcular gotas</button>
+
+    <div class="result" id="resultado">Ingresa un valor y presiona "Calcular".</div>
+
+    <button onclick="imprimir()">🖨️ Imprimir</button>
+    <button onclick="descargarPDF()">📄 Descargar PDF</button>
+  </div>
+</body>
+</html>
